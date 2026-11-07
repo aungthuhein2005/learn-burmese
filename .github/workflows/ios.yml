@@ -141,17 +141,29 @@ jobs:
       # still embeds a copy, which App Store validation rejects as "not properly signed".
       - name: Remove embedded static frameworks
         run: |
-          FW="$RUNNER_TEMP/KaGyi.xcarchive/Products/Applications/KaGyi.app/Frameworks"
-          [ -d "$FW" ] || exit 0
-          for f in "$FW"/*.framework; do
-            [ -e "$f" ] || continue
-            bin="$f/$(basename "$f" .framework)"
-            if file -b "$bin" | grep -q "ar archive"; then
-              echo "Removing static framework $(basename "$f")"
-              rm -rf "$f"
-            fi
-          done
-          rmdir "$FW" 2>/dev/null || true
+          python3 - "$RUNNER_TEMP/KaGyi.xcarchive" <<'PY'
+          import pathlib, shutil, struct, sys
+          def is_static(path):
+              b = path.read_bytes()[:4096]
+              if b.startswith(b"!<arch>"):
+                  return True
+              if b[:4] in (b"\xca\xfe\xba\xbe", b"\xca\xfe\xba\xbf"):   # fat binary: check each slice
+                  data = path.read_bytes()
+                  n = struct.unpack(">I", data[4:8])[0]
+                  wide = b[:4] == b"\xca\xfe\xba\xbf"
+                  step, fmt = (32, ">iiQQI") if wide else (20, ">iiIII")
+                  offs = [struct.unpack(fmt, data[8 + step*i: 8 + step*i + struct.calcsize(fmt)])[2] for i in range(n)]
+                  return all(data[o:o+7] == b"!<arch>" for o in offs)
+              return False
+          app = next(pathlib.Path(sys.argv[1], "Products", "Applications").glob("*.app"))
+          for fw in app.rglob("*.framework"):
+              binary = fw / fw.stem
+              kind = "static" if binary.exists() and is_static(binary) else "dynamic"
+              print(f"{fw.relative_to(app)}: {kind}")
+              if kind == "static":
+                  shutil.rmtree(fw)
+                  print(f"  removed {fw.name}")
+          PY
 
       - name: Export & upload to TestFlight
         run: |
