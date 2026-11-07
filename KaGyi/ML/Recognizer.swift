@@ -38,7 +38,8 @@ final class Recognizer {
     private var refs: [[[Float]]] = []
     private let queue = DispatchQueue(label: "kagyi.recognizer", qos: .userInitiated)
 
-    private static let cacheVersion = 1
+    /// Bump when the reference fonts or image normalization change.
+    private static let cacheVersion = 2
 
     init() throws {
         model = try HandwritingModel()
@@ -46,7 +47,7 @@ final class Recognizer {
 
     /// Fonts used to build references. Missing fonts are skipped.
     private static func referenceFonts() -> [UIFont] {
-        let names = ["MyanmarSangamMN", "NotoSansMyanmar-Regular", "MyanmarSangamMN-Bold"]
+        let names = ["MyanmarSangamMN", "NotoSansMyanmar-Regular"]
         var fonts = names.compactMap { UIFont(name: $0, size: 300) }
         if fonts.isEmpty { fonts = [UIFont.systemFont(ofSize: 300)] }
         return fonts
@@ -54,8 +55,10 @@ final class Recognizer {
 
     private static var cacheURL: URL {
         let dir = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
-        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
-        return dir.appendingPathComponent("references_v\(cacheVersion)_\(build).json")
+        // Keyed by the model file size, not the build number, so app updates keep the cache.
+        let modelPath = Bundle.main.path(forResource: "model", ofType: "onnx") ?? ""
+        let size = (try? FileManager.default.attributesOfItem(atPath: modelPath)[.size] as? NSNumber)?.int64Value ?? 0
+        return dir.appendingPathComponent("references_v\(cacheVersion)_\(size).json")
     }
 
     /// Loads cached references or computes them (first launch). Calls `progress` with 0...1.
@@ -67,7 +70,9 @@ final class Recognizer {
                        let cached = try? JSONDecoder().decode([[[Float]]].self, from: data),
                        cached.count == Alphabet.letters.count {
                         self.refs = cached
+                        print("KaGyi: loaded cached references")
                     } else {
+                        let start = Date()
                         let fonts = Self.referenceFonts()
                         var result: [[[Float]]] = []
                         for (i, letter) in Alphabet.letters.enumerated() {
@@ -79,6 +84,8 @@ final class Recognizer {
                             progress(Double(i + 1) / Double(Alphabet.letters.count))
                         }
                         self.refs = result
+                        print(String(format: "KaGyi: references ready in %.1fs (%d fonts)",
+                                     Date().timeIntervalSince(start), fonts.count))
                         if let data = try? JSONEncoder().encode(result) {
                             try? data.write(to: Self.cacheURL, options: .atomic)
                         }

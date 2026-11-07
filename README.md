@@ -12,7 +12,7 @@ uploads to TestFlight.
 
 ```
 project.yml                 XcodeGen spec (Xcode project is generated in CI)
-scripts/prepare_model.py    Downloads the HF model, fixes the export, converts to fp16
+scripts/prepare_model.py    Downloads the HF model, fixes the export, saves a single-file fp32 model
 .github/workflows/ios.yml   build job (every push/PR) + testflight job (main)
 KaGyi/App                   App entry, letter data
 KaGyi/ML                    ONNX Runtime wrapper, image normalization, scoring

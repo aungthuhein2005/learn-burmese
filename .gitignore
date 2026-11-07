@@ -1,7 +1,7 @@
 # Generated
 KaGyi.xcodeproj/
 KaGyi/Info.plist
-KaGyi/Resources/model_fp16.onnx
+KaGyi/Resources/model.onnx
 build/
 DerivedData/
 *.xcarchive

@@ -25,13 +25,13 @@ jobs:
         id: model-cache
         uses: actions/cache@v4
         with:
-          path: KaGyi/Resources/model_fp16.onnx
-          key: model-fp16-${{ hashFiles('scripts/prepare_model.py') }}
-      - name: Download & convert model (fp16)
+          path: KaGyi/Resources/model.onnx
+          key: model-fp32-${{ hashFiles('scripts/prepare_model.py') }}
+      - name: Download & prepare model (fp32)
         if: steps.model-cache.outputs.cache-hit != 'true'
         run: |
-          pip install onnx onnxruntime onnxconverter-common numpy
-          python scripts/prepare_model.py KaGyi/Resources/model_fp16.onnx
+          pip install onnx onnxruntime numpy
+          python scripts/prepare_model.py KaGyi/Resources/model.onnx
 
       - name: Build for simulator (Release)
         run: |

@@ -8,9 +8,9 @@ final class HandwritingModel {
     private let session: ORTSession
 
     init() throws {
-        guard let path = Bundle.main.path(forResource: "model_fp16", ofType: "onnx") else {
+        guard let path = Bundle.main.path(forResource: "model", ofType: "onnx") else {
             throw NSError(domain: "KaGyi", code: 1,
-                          userInfo: [NSLocalizedDescriptionKey: "model_fp16.onnx missing from app bundle"])
+                          userInfo: [NSLocalizedDescriptionKey: "model.onnx missing from app bundle"])
         }
         env = try ORTEnv(loggingLevel: .warning)
         let options = try ORTSessionOptions()

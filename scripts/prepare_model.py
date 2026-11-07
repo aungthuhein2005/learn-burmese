@@ -1,5 +1,9 @@
-"""Download the Myanmar handwriting model from Hugging Face and convert it to a
-single-file float16 ONNX model for the iOS app bundle.
+"""Download the Myanmar handwriting model from Hugging Face and save it as a
+single-file float32 ONNX model for the iOS app bundle, with the exported
+Loop/as_strided block removed.
+
+float32 on purpose: on iPhone (arm64) ONNX Runtime 1.20's float16 CPU paths
+were ~20x slower and crashed (EXC_BAD_ACCESS) during reference preparation.
 
 Usage:  python scripts/prepare_model.py <output_path>
 """
@@ -10,7 +14,6 @@ from pathlib import Path
 import numpy as np
 import onnx
 import onnxruntime as ort
-from onnxconverter_common import float16
 
 REPO = "https://huggingface.co/aungthuhein-dev/myanmar-handwriting/resolve/main/"
 
@@ -46,7 +49,7 @@ def remove_as_strided(graph: onnx.GraphProto) -> None:
 
 
 def main() -> None:
-    out = Path(sys.argv[1] if len(sys.argv) > 1 else "KaGyi/Resources/model_fp16.onnx")
+    out = Path(sys.argv[1] if len(sys.argv) > 1 else "KaGyi/Resources/model.onnx")
     work = Path("build/model_src")
     work.mkdir(parents=True, exist_ok=True)
     download("model.onnx", work / "model.onnx")
@@ -54,20 +57,19 @@ def main() -> None:
 
     model = onnx.load(str(work / "model.onnx"))  # loads external data too
     remove_as_strided(model.graph)
-    fp16 = float16.convert_float_to_float16(model, keep_io_types=True)
     out.parent.mkdir(parents=True, exist_ok=True)
-    onnx.save(fp16, str(out))
+    onnx.save(model, str(out))   # single file (< 2 GB protobuf limit)
     print(f"Saved {out} ({out.stat().st_size / 1e6:.1f} MB)")
 
-    # Sanity check: fp16 embeddings must match fp32 ones closely.
+    # Sanity check: the rewired graph must match the original export.
     rng = np.random.default_rng(0)
     x = rng.random((2, 3, 224, 224), dtype=np.float32)
     a = ort.InferenceSession(str(work / "model.onnx")).run(None, {"input": x})[0]
     b = ort.InferenceSession(str(out)).run(None, {"input": x})[0]
     cos = (a * b).sum(1) / (np.linalg.norm(a, axis=1) * np.linalg.norm(b, axis=1))
-    print("fp32 vs fp16 cosine:", cos)
-    if cos.min() < 0.999:
-        sys.exit("fp16 conversion drifted too far from fp32")
+    print("original vs prepared cosine:", cos)
+    if cos.min() < 0.9999:
+        sys.exit("prepared model does not match the original")
 
 
 if __name__ == "__main__":
