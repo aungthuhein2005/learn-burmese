@@ -1,19 +1,61 @@
-# Akkhara
+<p align="center">
+  <img src="docs/logo.png" alt="Akkhara logo" width="160" height="160">
+</p>
 
-iOS app that teaches kids and beginners to write the 33 Myanmar consonants.
-Children draw a letter; the on-device model
+<h1 align="center">Akkhara</h1>
+
+<p align="center">
+  <b>Learn to write the Myanmar alphabet — one letter at a time.</b>
+</p>
+
+<p align="center">
+  <a href="https://github.com/aungthuhein2005/learn-burmese/actions/workflows/ios.yml"><img src="https://github.com/aungthuhein2005/learn-burmese/actions/workflows/ios.yml/badge.svg" alt="iOS build"></a>
+  <img src="https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white" alt="iOS 16+">
+  <img src="https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white" alt="Swift 5">
+  <img src="https://img.shields.io/badge/UI-SwiftUI-0A84FF?logo=swift&logoColor=white" alt="SwiftUI">
+  <img src="https://img.shields.io/badge/ONNX%20Runtime-1.20-005CED?logo=onnx&logoColor=white" alt="ONNX Runtime 1.20">
+  <a href="https://huggingface.co/aungthuhein-dev/myanmar-handwriting"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20Model-myanmar--handwriting-FFD21E" alt="Hugging Face model"></a>
+  <img src="https://img.shields.io/badge/TestFlight-beta-1C8EF9?logo=apple&logoColor=white" alt="TestFlight beta">
+</p>
+
+---
+
+**Akkhara** (အက္ခရာ, "alphabet") is an iPhone and iPad app that helps beginners
+and children learn to **write** the 33 Myanmar consonants. A child hears a
+letter, traces or writes it with a finger or Apple Pencil, and gets 0–3 stars
+with friendly spoken encouragement.
+
+Handwriting is checked **entirely on the device** by the
 [`aungthuhein-dev/myanmar-handwriting`](https://huggingface.co/aungthuhein-dev/myanmar-handwriting)
-scores it with 0–3 stars. See [DESIGN.md](DESIGN.md) for screens and design.
+model running on ONNX Runtime. Drawings never leave the phone, and the app has
+no ads, accounts or tracking.
 
-No Mac needed: GitHub Actions generates the Xcode project, builds, signs and
-uploads to TestFlight.
+### Features
+
+- **Learn**: swipe through all 33 letters and hear each one, recorded by a native speaker
+- **Practice**: pick a letter from a grid grouped in its traditional rows, then write over a faint guide letter to get a star score
+- **Quiz**: hear a letter, then write it from memory, 10 rounds
+- **My Stars**: a progress board showing the best score for every letter
+- **Parents' Corner**: behind a simple adult gate, with difficulty, sound and tracing-guide settings
+- Works offline and supports Apple Pencil on iPad
+
+See [DESIGN.md](DESIGN.md) for the screen list, wireframes and scoring design.
+
+### How it's built
+
+No Mac is needed. GitHub Actions generates the Xcode project with XcodeGen,
+downloads and prepares the model, builds and signs the app, and uploads it to
+TestFlight.
 
 ## Layout
 
 ```
 project.yml                 XcodeGen spec (Xcode project is generated in CI)
 scripts/prepare_model.py    Downloads the HF model, fixes the export, saves a single-file fp32 model
-.github/workflows/ios.yml   build job (every push/PR) + testflight job (main)
+.github/workflows/ios.yml   build check (every push/PR) + TestFlight upload (manual run)
+.github/workflows/smoke.yml launches the app on a simulator and collects crashes (manual run)
+scripts/generate_voices.py  generates the praise clips with Azure TTS
+docs/logo.png               logo used in this README
 KaGyi/App                   App entry, letter data
 KaGyi/ML                    ONNX Runtime wrapper, image normalization, scoring
 KaGyi/Services              App state, progress, audio
@@ -23,14 +65,13 @@ KaGyi/Resources             Icon, letter voices (model is added in CI)
 
 ## One-time TestFlight setup
 
-Signing is cloud-managed with an App Store Connect API key (same as palm-note):
+Signing is cloud-managed with an App Store Connect API key:
 no certificate or provisioning profile files are needed.
 
 1. Register the bundle ID `com.aungthuhein.kagyi` at developer.apple.com →
    Identifiers, then create the app in App Store Connect → Apps → + with it.
    (To use another ID, set a repository **variable** `BUNDLE_ID`.)
-2. Add these repository secrets (Settings → Secrets and variables → Actions) —
-   the same values you use for palm-note:
+2. Add these repository secrets (Settings → Secrets and variables → Actions):
 
    | Secret | Value |
    |---|---|
