@@ -23,42 +23,25 @@ KaGyi/Resources             Icon, letter voices (model is added in CI)
 
 ## One-time TestFlight setup
 
-1. **App Store Connect:** create the app (My Apps → +) with your bundle ID,
-   e.g. `com.yourname.kagyi`. Register the same ID under
-   Certificates, IDs & Profiles → Identifiers.
-2. **Apple Distribution certificate (works on Windows with OpenSSL / Git Bash):**
-   ```bash
-   openssl genrsa -out dist.key 2048
-   openssl req -new -key dist.key -out dist.csr -subj "/emailAddress=you@example.com/CN=Your Name/C=MM"
-   ```
-   Upload `dist.csr` at developer.apple.com → Certificates → + → *Apple Distribution*,
-   download `distribution.cer`, then:
-   ```bash
-   openssl x509 -inform DER -in distribution.cer -out dist.pem
-   openssl pkcs12 -export -legacy -inkey dist.key -in dist.pem -out dist.p12
-   ```
-   (Choose an export password. If your OpenSSL doesn't know `-legacy`, drop it.)
-3. **Provisioning profile:** Profiles → + → *App Store Connect* → your app ID →
-   the certificate above → download the `.mobileprovision`.
-4. **App Store Connect API key:** Users and Access → Integrations → App Store
-   Connect API → + (role *App Manager*). Note the Key ID and Issuer ID and
-   download `AuthKey_XXXX.p8`.
-5. **GitHub repo secrets** (Settings → Secrets and variables → Actions):
+Signing is cloud-managed with an App Store Connect API key (same as palm-note):
+no certificate or provisioning profile files are needed.
+
+1. Register the bundle ID `com.aungthuhein.kagyi` at developer.apple.com →
+   Identifiers, then create the app in App Store Connect → Apps → + with it.
+   (To use another ID, set a repository **variable** `BUNDLE_ID`.)
+2. Add these repository secrets (Settings → Secrets and variables → Actions) —
+   the same values you use for palm-note:
 
    | Secret | Value |
    |---|---|
-   | `BUILD_CERTIFICATE_BASE64` | `base64 -w0 dist.p12` |
-   | `P12_PASSWORD` | the export password from step 2 |
-   | `BUILD_PROVISION_PROFILE_BASE64` | `base64 -w0 KaGyi.mobileprovision` |
-   | `ASC_KEY_ID` | API Key ID |
-   | `ASC_ISSUER_ID` | Issuer ID |
-   | `ASC_PRIVATE_KEY` | full text of the `.p8` file |
+   | `APPLE_TEAM_ID` | 10-character Team ID |
+   | `APPSTORE_KEY_ID` | API key ID |
+   | `APPSTORE_ISSUER_ID` | Issuer ID |
+   | `APPSTORE_PRIVATE_KEY` | full text of `AuthKey_XXXXXXXXXX.p8` |
 
-   Bundle ID and Team ID are read from the provisioning profile automatically.
-
-Push to `main` (or run the workflow manually): the build appears in TestFlight
-after Apple finishes processing (~10–30 min). The build number is the workflow
-run number.
+3. Actions → **iOS build & TestFlight** → **Run workflow**. The build appears in
+   TestFlight after Apple finishes processing (~10–30 min). The build number is
+   the workflow run number. Pushes and PRs only run the compile check.
 
 ## Scoring notes
 
