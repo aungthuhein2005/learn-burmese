@@ -1,0 +1,17 @@
+# Generated
+KaGyi.xcodeproj/
+KaGyi/Info.plist
+KaGyi/Resources/model_fp16.onnx
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+.DS_Store
+__pycache__/
+# Secrets — never commit
+*.p12
+*.p8
+*.mobileprovision
+*.key
+*.csr
+*.cer
