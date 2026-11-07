@@ -137,6 +137,22 @@ jobs:
             | tee archive.log | grep -E "error:|ARCHIVE (SUCCEEDED|FAILED)" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
 
+      # onnxruntime.framework is a *static* library (already linked into the app), but Xcode
+      # still embeds a copy, which App Store validation rejects as "not properly signed".
+      - name: Remove embedded static frameworks
+        run: |
+          FW="$RUNNER_TEMP/KaGyi.xcarchive/Products/Applications/KaGyi.app/Frameworks"
+          [ -d "$FW" ] || exit 0
+          for f in "$FW"/*.framework; do
+            [ -e "$f" ] || continue
+            bin="$f/$(basename "$f" .framework)"
+            if file -b "$bin" | grep -q "ar archive"; then
+              echo "Removing static framework $(basename "$f")"
+              rm -rf "$f"
+            fi
+          done
+          rmdir "$FW" 2>/dev/null || true
+
       - name: Export & upload to TestFlight
         run: |
           set -o pipefail
