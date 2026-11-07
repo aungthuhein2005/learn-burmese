@@ -137,33 +137,29 @@ jobs:
             | tee archive.log | grep -E "error:|ARCHIVE (SUCCEEDED|FAILED)" || true
           grep -q "ARCHIVE SUCCEEDED" archive.log
 
-      # onnxruntime.framework is a *static* library (already linked into the app), but Xcode
-      # still embeds a copy, which App Store validation rejects as "not properly signed".
-      - name: Remove embedded static frameworks
+      # onnxruntime 1.20 is a static library already linked into the app, but Xcode still
+      # embeds a copy that App Store validation rejects (bad signature, no MinimumOSVersion).
+      # Drop every embedded framework the app binary does not link; patch the rest.
+      - name: Clean up embedded frameworks
         run: |
-          python3 - "$RUNNER_TEMP/KaGyi.xcarchive" <<'PY'
-          import pathlib, shutil, struct, sys
-          def is_static(path):
-              b = path.read_bytes()[:4096]
-              if b.startswith(b"!<arch>"):
-                  return True
-              if b[:4] in (b"\xca\xfe\xba\xbe", b"\xca\xfe\xba\xbf"):   # fat binary: check each slice
-                  data = path.read_bytes()
-                  n = struct.unpack(">I", data[4:8])[0]
-                  wide = b[:4] == b"\xca\xfe\xba\xbf"
-                  step, fmt = (32, ">iiQQI") if wide else (20, ">iiIII")
-                  offs = [struct.unpack(fmt, data[8 + step*i: 8 + step*i + struct.calcsize(fmt)])[2] for i in range(n)]
-                  return all(data[o:o+7] == b"!<arch>" for o in offs)
-              return False
-          app = next(pathlib.Path(sys.argv[1], "Products", "Applications").glob("*.app"))
-          for fw in app.rglob("*.framework"):
-              binary = fw / fw.stem
-              kind = "static" if binary.exists() and is_static(binary) else "dynamic"
-              print(f"{fw.relative_to(app)}: {kind}")
-              if kind == "static":
-                  shutil.rmtree(fw)
-                  print(f"  removed {fw.name}")
-          PY
+          APP=$(echo "$RUNNER_TEMP"/KaGyi.xcarchive/Products/Applications/*.app)
+          EXE="$APP/$(/usr/libexec/PlistBuddy -c 'Print CFBundleExecutable' "$APP/Info.plist")"
+          echo "App links:"; otool -L "$EXE" | sed 1d
+          [ -d "$APP/Frameworks" ] || exit 0
+          for fw in "$APP"/Frameworks/*.framework; do
+            [ -e "$fw" ] || continue
+            name=$(basename "$fw" .framework)
+            echo "--- $name.framework"; file "$fw/$name" || true
+            if otool -L "$EXE" | grep -q "/$name.framework/"; then
+              echo "linked dynamically: keeping, setting MinimumOSVersion"
+              /usr/libexec/PlistBuddy -c "Delete :MinimumOSVersion" "$fw/Info.plist" 2>/dev/null || true
+              /usr/libexec/PlistBuddy -c "Add :MinimumOSVersion string 16.0" "$fw/Info.plist"
+            else
+              echo "not linked by the app: removing"
+              rm -rf "$fw"
+            fi
+          done
+          rmdir "$APP/Frameworks" 2>/dev/null || true
 
       - name: Export & upload to TestFlight
         run: |
