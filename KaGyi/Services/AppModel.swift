@@ -32,7 +32,15 @@ final class AppModel: ObservableObject {
         if let saved = UserDefaults.standard.dictionary(forKey: starsKey) as? [String: Int] {
             bestStars = Dictionary(uniqueKeysWithValues: saved.compactMap { k, v in Int(k).map { ($0, v) } })
         }
-        try? AVAudioSession.sharedInstance().setCategory(.ambient)
+        // .playback so letter sounds play even when the Ring/Silent switch is on silent
+        // (.ambient is muted by it). mixWithOthers keeps any music the child is playing.
+        let session = AVAudioSession.sharedInstance()
+        do {
+            try session.setCategory(.playback, mode: .spokenAudio, options: [.mixWithOthers])
+            try session.setActive(true)
+        } catch {
+            print("Audio session error: \(error)")
+        }
     }
 
     func load() async {
@@ -88,9 +96,19 @@ final class AppModel: ObservableObject {
         guard soundOn,
               let url = Bundle.main.url(forResource: name, withExtension: "wav")
                 ?? Bundle.main.url(forResource: name, withExtension: "m4a")
-        else { return }
+        else {
+            print("Missing audio clip: \(name)")
+            return
+        }
         player?.stop()
-        player = try? AVAudioPlayer(contentsOf: url)
-        player?.play()
+        do {
+            let p = try AVAudioPlayer(contentsOf: url)
+            p.volume = 1
+            p.prepareToPlay()
+            p.play()
+            player = p
+        } catch {
+            print("Audio play error for \(name): \(error)")
+        }
     }
 }
