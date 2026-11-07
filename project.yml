@@ -9,7 +9,9 @@ options:
 packages:
   onnxruntime:
     url: https://github.com/microsoft/onnxruntime-swift-package-manager
-    from: 1.20.0
+    # Pinned: 1.20.0 ships a static library (linked into the app, nothing to sign).
+    # 1.24.x ships a dynamic framework that fails App Store signature validation.
+    exactVersion: 1.20.0
 
 settings:
   base:
