@@ -113,6 +113,7 @@ struct QuizView: View {
         checking = false
         guard let r else { return }
         model.record(r)
+        model.playPraise(stars: r.stars)
         earned += r.stars
         withAnimation(.spring()) { lastStars = r.stars }
         if r.stars == 3 { UINotificationFeedbackGenerator().notificationOccurred(.success) }

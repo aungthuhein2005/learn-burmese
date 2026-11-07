@@ -15,3 +15,6 @@ __pycache__/
 *.key
 *.csr
 *.cer
+
+# Azure Speech key (local only)
+.azure-speech.env

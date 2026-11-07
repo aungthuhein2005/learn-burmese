@@ -115,6 +115,7 @@ struct PracticeView: View {
         checking = false
         if let r {
             model.record(r)
+            model.playPraise(stars: r.stars)
             result = IdentifiedResult(result: r)
         }
     }

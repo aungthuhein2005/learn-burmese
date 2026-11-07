@@ -75,8 +75,19 @@ final class AppModel: ObservableObject {
     // MARK: Audio
 
     func play(_ letter: Letter) {
+        playClip(letter.voiceFile)
+    }
+
+    /// Spoken encouragement after a check (praise_0 ... praise_3).
+    func playPraise(stars: Int) {
+        playClip("praise_\(min(max(stars, 0), 3))")
+    }
+
+    /// Plays a bundled clip; prefers the generated Azure .wav, falls back to the human .m4a recording.
+    func playClip(_ name: String) {
         guard soundOn,
-              let url = Bundle.main.url(forResource: letter.voiceFile, withExtension: "m4a")
+              let url = Bundle.main.url(forResource: name, withExtension: "wav")
+                ?? Bundle.main.url(forResource: name, withExtension: "m4a")
         else { return }
         player?.stop()
         player = try? AVAudioPlayer(contentsOf: url)

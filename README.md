@@ -43,6 +43,22 @@ no certificate or provisioning profile files are needed.
    TestFlight after Apple finishes processing (~10–30 min). The build number is
    the workflow run number. Pushes and PRs only run the compile check.
 
+## Voices
+
+`KaGyi/Resources/voices/` holds the letter names (`letter_XX`) and praise clips
+(`praise_0`–`praise_3`). The `.wav` files are generated with Azure Neural TTS
+(`my-MM-NilarNeural`); the app falls back to the human `.m4a` recordings, which
+are still used for the bare-consonant letters (င မ လ ဝ သ ဟ အ) that Azure can't
+say clearly on their own.
+
+```bash
+pip install miniaudio
+python scripts/generate_voices.py --env-file path/to/azure.env           # all clips
+python scripts/generate_voices.py --env-file path/to/azure.env --only letter_11
+```
+
+The env file holds `AZURE_SPEECH_KEY=` and `AZURE_SPEECH_REGION=`. Keep it out of git.
+
 ## Scoring notes
 
 - Drawings and reference glyphs are both cropped, centered and scaled to the
