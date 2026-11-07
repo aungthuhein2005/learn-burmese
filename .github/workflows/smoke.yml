@@ -1,0 +1,88 @@
+# Installs the app on an iPhone simulator, launches it, lets it run, and collects
+# console output and crash reports. Run by hand: Actions > Simulator smoke test.
+name: Simulator smoke test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      BUNDLE_ID: com.aungthuhein.kagyi
+      APPLE_TEAM_ID: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache converted model
+        id: model-cache
+        uses: actions/cache@v4
+        with:
+          path: KaGyi/Resources/model_fp16.onnx
+          key: model-fp16-${{ hashFiles('scripts/prepare_model.py') }}
+      - name: Download & convert model (fp16)
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        run: |
+          pip install onnx onnxruntime onnxconverter-common numpy
+          python scripts/prepare_model.py KaGyi/Resources/model_fp16.onnx
+
+      - name: Build for simulator (Release)
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          set -o pipefail
+          xcodebuild -project KaGyi.xcodeproj -scheme KaGyi -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 20
+
+      - name: Launch on simulator
+        run: |
+          APP=$(find build/Build/Products -name KaGyi.app -maxdepth 3 | head -1)
+          DEVICE=$(xcrun simctl list devices available -j | python3 -c "
+          import json,sys
+          d=json.load(sys.stdin)['devices']
+          print(next(x['udid'] for k,v in d.items() if 'iOS' in k for x in v if x['name'].startswith('iPhone')))")
+          echo "Device $DEVICE"
+          xcrun simctl boot "$DEVICE"
+          xcrun simctl bootstatus "$DEVICE" -b
+          xcrun simctl install "$DEVICE" "$APP"
+          mkdir -p smoke
+          # First launch (fresh install), then a second launch (uses cached references).
+          for run in 1 2; do
+            xcrun simctl launch --console-pty --terminate-running-process "$DEVICE" "$BUNDLE_ID" > "smoke/console_$run.log" 2>&1 &
+            PID=$!
+            sleep 90
+            if xcrun simctl spawn "$DEVICE" launchctl list | grep -q "$BUNDLE_ID"; then
+              echo "Run $run: app still running after 90s"
+            else
+              echo "::warning::Run $run: app is NOT running after 90s"
+            fi
+            kill $PID 2>/dev/null || true
+            echo "----- console run $run -----"; cat "smoke/console_$run.log" | tail -n 60
+          done
+          xcrun simctl io "$DEVICE" screenshot smoke/screen.png || true
+
+      - name: Collect crash reports
+        if: always()
+        run: |
+          mkdir -p smoke/crashes
+          find ~/Library/Logs/DiagnosticReports -name 'KaGyi*' -exec cp {} smoke/crashes/ \; 2>/dev/null || true
+          ls -la smoke/crashes
+          for f in smoke/crashes/*; do
+            [ -e "$f" ] || continue
+            echo "===== $f"; head -c 12000 "$f"; echo
+          done
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-results
+          path: smoke
