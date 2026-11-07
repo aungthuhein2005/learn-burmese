@@ -1,5 +1,5 @@
 import Foundation
-import onnxruntime_objc
+import OnnxRuntimeBindings
 
 /// Wraps the ONNX embedding model: [N, 3, 224, 224] image → [N, 256] embedding.
 final class HandwritingModel {
