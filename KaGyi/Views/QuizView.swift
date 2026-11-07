@@ -50,7 +50,7 @@ struct QuizView: View {
                 .accessibilityLabel("Listen again")
                 VStack(alignment: .leading, spacing: 2) {
                     Text("Listen and write!").font(Theme.title(22)).foregroundColor(Theme.ink)
-                    Text("နားထောင်ပြီး ရေးပါ").font(Theme.body(16)).foregroundColor(.secondary)
+                    Text("နားထောင်ပြီး ရေးပါ").font(Theme.body(16)).foregroundColor(.secondary).myanmarSpacing()
                 }
                 Spacer()
             }
@@ -94,6 +94,7 @@ struct QuizView: View {
             Text("\(earned) / \(Self.rounds * 3) stars").font(Theme.title(32)).foregroundColor(Theme.ink)
             Text(earned >= Self.rounds * 2 ? "သိပ်ကောင်းတယ်!" : "ကောင်းတယ်! ထပ်ကြိုးစားကြမယ်")
                 .font(.system(size: 22, weight: .bold)).foregroundColor(.secondary)
+                .myanmarSpacing(6)
             Spacer()
             Button {
                 questions = Array(Alphabet.letters.shuffled().prefix(Self.rounds))

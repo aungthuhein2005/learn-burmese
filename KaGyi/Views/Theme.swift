@@ -18,6 +18,11 @@ enum Theme {
     static func body(_ size: CGFloat = 18) -> Font { .system(size: size, weight: .semibold, design: .rounded) }
 }
 
+extension View {
+    /// Burmese marks above/below a letter extend past the line height; give them room.
+    func myanmarSpacing(_ amount: CGFloat = 4) -> some View { padding(.vertical, amount) }
+}
+
 extension Color {
     init(hex: UInt32) {
         self.init(red: Double((hex >> 16) & 0xFF) / 255,

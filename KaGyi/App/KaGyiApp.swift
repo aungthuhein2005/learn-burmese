@@ -8,6 +8,9 @@ struct KaGyiApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(model)
+                // The palette is light-only; without this, Dark Mode turns default and
+                // .secondary text white on the cream background and it disappears.
+                .preferredColorScheme(.light)
                 .task { await model.load() }
         }
     }

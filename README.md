@@ -1,4 +1,4 @@
-# KaGyi (ကကြီး)
+# Akkhara
 
 iOS app that teaches kids and beginners to write the 33 Myanmar consonants.
 Children draw a letter; the on-device model

@@ -68,7 +68,7 @@ struct ParentsView: View {
             }
 
             Section("About") {
-                Text("KaGyi helps children learn to write the 33 Myanmar consonants. Handwriting is checked entirely on this device — drawings are never uploaded, and the app has no ads, accounts or tracking.")
+                Text("Akkhara helps children learn to write the 33 Myanmar consonants. Handwriting is checked entirely on this device — drawings are never uploaded, and the app has no ads, accounts or tracking.")
                     .font(.footnote)
                 LabeledContent("Version", value: Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "-")
             }

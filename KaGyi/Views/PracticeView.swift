@@ -36,7 +36,7 @@ struct PracticeView: View {
             } label: {
                 HStack {
                     if checking { ProgressView().tint(.white) } else { Image(systemName: "checkmark.circle.fill") }
-                    Text("Check  ·  စစ်မယ်")
+                    Text("Check  ·  စစ်မယ်").myanmarSpacing(2)
                 }
             }
             .buttonStyle(KidButtonStyle(color: Theme.success))

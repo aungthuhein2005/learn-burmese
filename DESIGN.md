@@ -1,4 +1,4 @@
-# KaGyi (ကကြီး) — Design Draft v1
+# Akkhara — Design Draft v1
 
 An iPhone / iPad app where beginners and kids (ages 4–10) learn to **write** the
 33 Myanmar consonants by drawing them with a finger or Apple Pencil. All scoring

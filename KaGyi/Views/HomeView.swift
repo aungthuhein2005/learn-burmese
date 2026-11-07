@@ -6,10 +6,9 @@ struct LoadingView: View {
 
     var body: some View {
         VStack(spacing: 24) {
-            Text("ကကြီး")
-                .font(.system(size: 72, weight: .bold))
+            Text("Akkhara")
+                .font(Theme.title(48))
                 .foregroundColor(Theme.primary)
-            Text("KaGyi").font(Theme.title(32)).foregroundColor(Theme.ink)
             if let error {
                 Text("Something went wrong").font(Theme.body())
                 Text(error).font(.footnote).foregroundColor(.secondary).multilineTextAlignment(.center)
@@ -43,8 +42,7 @@ struct HomeView: View {
         ScrollView {
             VStack(spacing: 20) {
                 VStack(spacing: 4) {
-                    Text("ကကြီး").font(.system(size: 56, weight: .bold)).foregroundColor(Theme.primary)
-                    Text("KaGyi").font(Theme.title(26)).foregroundColor(Theme.ink)
+                    Text("Akkhara").font(Theme.title(44)).foregroundColor(Theme.primary)
                     HStack(spacing: 6) {
                         Image(systemName: "star.fill").foregroundColor(Theme.star)
                         Text("\(model.totalStars) stars").font(Theme.body(18)).foregroundColor(Theme.ink)
@@ -111,7 +109,7 @@ struct HomeTile: View {
             VStack(spacing: 10) {
                 Image(systemName: symbol).font(.system(size: 40, weight: .bold))
                 Text(title).font(Theme.title(22))
-                Text(subtitle).font(.system(size: 15, weight: .medium)).opacity(0.9)
+                Text(subtitle).font(.system(size: 15, weight: .medium)).opacity(0.9).myanmarSpacing()
             }
             .foregroundColor(.white)
             .frame(maxWidth: .infinity, minHeight: 160)

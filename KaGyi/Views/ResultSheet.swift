@@ -33,6 +33,7 @@ struct ResultSheet: View {
                     }
                 }
                 Text(message.my).font(.system(size: 24, weight: .bold)).foregroundColor(Theme.ink)
+                    .multilineTextAlignment(.center).myanmarSpacing(6)
                 Text(message.en).font(Theme.body(18)).foregroundColor(.secondary)
 
                 HStack(spacing: 12) {
