@@ -166,11 +166,11 @@ jobs:
         run: |
           APP=$(echo "$RUNNER_TEMP"/KaGyi.xcarchive/Products/Applications/*.app)
           m4a=$(ls "$APP"/letter_*.m4a 2>/dev/null | wc -l | tr -d ' ')
-          wav=$(ls "$APP"/letter_*.wav "$APP"/praise_*.wav 2>/dev/null | wc -l | tr -d ' ')
-          echo "letter m4a: $m4a, generated wav: $wav"
+          praise=$(ls "$APP"/praise_*.wav 2>/dev/null | wc -l | tr -d ' ')
+          echo "letter recordings: $m4a, praise clips: $praise"
           ls -la "$APP"/model_fp16.onnx
           [ "$m4a" -eq 33 ] || { echo "::error::Expected 33 letter_XX.m4a at bundle root, found $m4a"; ls -R "$APP" | head -80; exit 1; }
-          [ "$wav" -ge 30 ] || { echo "::error::Expected generated .wav clips at bundle root, found $wav"; exit 1; }
+          [ "$praise" -eq 4 ] || { echo "::error::Expected 4 praise_X.wav at bundle root, found $praise"; exit 1; }
 
       - name: Export & upload to TestFlight
         run: |

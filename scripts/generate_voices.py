@@ -124,11 +124,13 @@ def main() -> None:
     p.add_argument("--voice", default="my-MM-NilarNeural", help="or my-MM-ThihaNeural")
     p.add_argument("--rate", default="-15%", help="speaking rate; slower is easier for kids")
     p.add_argument("--only", help="generate just this clip, e.g. letter_05 or praise_3")
+    p.add_argument("--letters", action="store_true", help="also generate TTS letter names (app prefers .wav over the recordings)")
     p.add_argument("--env-file", help="path to a KEY=VALUE file with the Azure settings")
     args = p.parse_args()
     key, region = load_config(args.env_file)
 
-    clips = {f"letter_{i:02d}": name for i, name in enumerate(LETTER_NAMES, 1) if len(name) > 1}
+    # Letters use the human recordings (letter_XX.m4a); pass --letters to generate TTS versions.
+    clips = {f"letter_{i:02d}": name for i, name in enumerate(LETTER_NAMES, 1) if len(name) > 1} if args.letters else {}
     clips.update(PHRASES)
     if args.only:
         clips = {k: v for k, v in clips.items() if k == args.only}

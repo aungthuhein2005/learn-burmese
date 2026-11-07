@@ -45,16 +45,17 @@ no certificate or provisioning profile files are needed.
 
 ## Voices
 
-`KaGyi/Resources/voices/` holds the letter names (`letter_XX`) and praise clips
-(`praise_0`–`praise_3`). The `.wav` files are generated with Azure Neural TTS
-(`my-MM-NilarNeural`); the app falls back to the human `.m4a` recordings, which
-are still used for the bare-consonant letters (င မ လ ဝ သ ဟ အ) that Azure can't
-say clearly on their own.
+`KaGyi/Resources/voices/` holds:
+- `letter_01.m4a` … `letter_33.m4a`: human recordings of the 33 consonants.
+- `praise_0.wav` … `praise_3.wav`: encouragement after each check, generated with
+  Azure Neural TTS (`my-MM-NilarNeural`).
+
+The app plays a `.wav` clip if one exists, otherwise the `.m4a`. To replace a
+sound with a new recording, drop an `.m4a` with the same name into the folder.
 
 ```bash
 pip install miniaudio
-python scripts/generate_voices.py --env-file path/to/azure.env           # all clips
-python scripts/generate_voices.py --env-file path/to/azure.env --only letter_11
+python scripts/generate_voices.py --env-file path/to/azure.env           # praise clips
 ```
 
 The env file holds `AZURE_SPEECH_KEY=` and `AZURE_SPEECH_REGION=`. Keep it out of git.
