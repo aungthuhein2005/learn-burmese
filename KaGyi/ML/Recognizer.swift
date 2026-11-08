@@ -39,7 +39,7 @@ final class Recognizer {
     private let queue = DispatchQueue(label: "kagyi.recognizer", qos: .userInitiated)
 
     /// Bump when the reference fonts or image normalization change.
-    private static let cacheVersion = 2
+    private static let cacheVersion = 3   // 3: pen-style references
 
     init() throws {
         model = try HandwritingModel()
@@ -78,6 +78,7 @@ final class Recognizer {
                         for (i, letter) in Alphabet.letters.enumerated() {
                             let inputs = fonts.compactMap { font in
                                 ImageNormalizer.alpha(fromGlyph: letter.char, font: font)
+                                    .flatMap(ImageNormalizer.penStyle)
                                     .map(ImageNormalizer.modelInput(fromAlpha:))
                             }
                             result.append(try self.model.embed(inputs))

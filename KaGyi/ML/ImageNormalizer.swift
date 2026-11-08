@@ -93,6 +93,67 @@ enum ImageNormalizer {
         }
     }
 
+    // MARK: Pen-style references
+
+    /// Turns a fitted glyph into what a finger drawing of it looks like: thins the
+    /// glyph to its centre line, then redraws that line with the same pen as strokes.
+    /// Without this, small glyphs (င, ဒ) scaled up to fill the box get very thick
+    /// strokes that no hand drawing matches.
+    static func penStyle(_ alpha: [UInt8]) -> [UInt8]? {
+        let n = side
+        var img = alpha.map { $0 > 127 }
+        thin(&img, size: n)
+        let r = penWidth / 2
+        return render { ctx in
+            ctx.translateBy(x: 0, y: CGFloat(n))
+            ctx.scaleBy(x: 1, y: -1)              // row 0 = top, like the buffer
+            ctx.setFillColor(gray: 1, alpha: 1)
+            for y in 0..<n {
+                for x in 0..<n where img[y * n + x] {
+                    let cx = CGFloat(x) + 0.5, cy = CGFloat(y) + 0.5
+                    ctx.fillEllipse(in: CGRect(x: cx - r, y: cy - r, width: 2 * r, height: 2 * r))
+                }
+            }
+        }
+    }
+
+    /// Zhang–Suen thinning on a binary image (true = ink), in place.
+    private static func thin(_ img: inout [Bool], size n: Int) {
+        func at(_ x: Int, _ y: Int) -> Bool {
+            x >= 0 && y >= 0 && x < n && y < n && img[y * n + x]
+        }
+        var changed = true
+        while changed {
+            changed = false
+            for step in 0..<2 {
+                var remove: [Int] = []
+                for y in 0..<n {
+                    for x in 0..<n where img[y * n + x] {
+                        // Neighbours P2..P9, clockwise from north.
+                        let p = [at(x, y - 1), at(x + 1, y - 1), at(x + 1, y), at(x + 1, y + 1),
+                                 at(x, y + 1), at(x - 1, y + 1), at(x - 1, y), at(x - 1, y - 1)]
+                        let b = p.filter { $0 }.count
+                        guard b >= 2 && b <= 6 else { continue }
+                        var a = 0
+                        for i in 0..<8 where !p[i] && p[(i + 1) % 8] { a += 1 }
+                        guard a == 1 else { continue }
+                        let (p2, p4, p6, p8) = (p[0], p[2], p[4], p[6])
+                        if step == 0 {
+                            if (p2 && p4 && p6) || (p4 && p6 && p8) { continue }
+                        } else {
+                            if (p2 && p4 && p8) || (p2 && p6 && p8) { continue }
+                        }
+                        remove.append(y * n + x)
+                    }
+                }
+                if !remove.isEmpty {
+                    changed = true
+                    for i in remove { img[i] = false }
+                }
+            }
+        }
+    }
+
     // MARK: Model input
 
     /// Planar RGB float32 [3, 224, 224] in 0...1, ink blended over cream.
