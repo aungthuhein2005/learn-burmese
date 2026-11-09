@@ -9,6 +9,12 @@
 </p>
 
 <p align="center">
+  <a href="https://akkhara.vercel.app">Website</a> ·
+  <a href="https://akkhara.vercel.app/privacy">Privacy</a> ·
+  <a href="https://akkhara.vercel.app/support">Support</a>
+</p>
+
+<p align="center">
   <a href="https://github.com/aungthuhein2005/learn-burmese/actions/workflows/ios.yml"><img src="https://github.com/aungthuhein2005/learn-burmese/actions/workflows/ios.yml/badge.svg" alt="iOS build"></a>
   <img src="https://img.shields.io/badge/iOS-16%2B-000000?logo=apple&logoColor=white" alt="iOS 16+">
   <img src="https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white" alt="Swift 5">

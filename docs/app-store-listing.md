@@ -18,13 +18,13 @@ Character limits are Apple's; every field below fits.
 
 ## URLs
 
-Hosted from the `website/` folder (Vercel, like Palm Note).
+Hosted on Vercel from the `website/` folder.
 
 | Field | Value |
 |---|---|
-| Privacy Policy URL | `https://<your-vercel-domain>/privacy` |
-| Support URL | `https://<your-vercel-domain>/support` |
-| Marketing URL (optional) | `https://<your-vercel-domain>` |
+| Privacy Policy URL | `https://akkhara.vercel.app/privacy` |
+| Support URL | `https://akkhara.vercel.app/support` |
+| Marketing URL (optional) | `https://akkhara.vercel.app` |
 
 ## App Privacy
 
