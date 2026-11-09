@@ -67,7 +67,7 @@ jobs:
             echo "$kind: $DEV"
             xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
             xcrun simctl ui "$DEV" appearance light
-            xcrun simctl status_bar "$DEV" override --time "2026-01-09T09:41:00+00:00" --dataNetwork wifi --wifiMode active \
+            xcrun simctl status_bar "$DEV" override --time "9:41" --dataNetwork wifi --wifiMode active \
               --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
             xcrun simctl install "$DEV" "$APP"
             mkdir -p "raw/$kind"
