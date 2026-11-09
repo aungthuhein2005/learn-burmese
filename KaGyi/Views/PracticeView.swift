@@ -44,7 +44,7 @@ struct PracticeView: View {
             .opacity(strokes.isEmpty ? 0.5 : 1)
         }
         .padding(20)
-        .frame(maxWidth: 640)
+        .frame(maxWidth: Theme.maxWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
@@ -52,7 +52,7 @@ struct PracticeView: View {
             model.play(letter)
             // Screenshot automation: `-demoDraw YES` writes the letter and checks it.
             if AppModel.isDemo, UserDefaults.standard.bool(forKey: "demoDraw"), strokes.isEmpty {
-                let side = min(UIScreen.main.bounds.width, 640) - 48
+                let side = min(UIScreen.main.bounds.width, Theme.maxWidth) - 48
                 strokes = ImageNormalizer.demoStrokes(for: letter.char, canvasSide: side)
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { Task { await check() } }
             }
@@ -68,7 +68,7 @@ struct PracticeView: View {
     private var header: some View {
         HStack(alignment: .center, spacing: 16) {
             Text(letter.char)
-                .font(.system(size: 64, weight: .bold))
+                .font(.system(size: 64 * Theme.s, weight: .bold))
                 .foregroundColor(Theme.primary)
             VStack(alignment: .leading, spacing: 4) {
                 Text(letter.roman).font(Theme.title(26)).foregroundColor(Theme.ink)
@@ -77,9 +77,9 @@ struct PracticeView: View {
             Spacer()
             Button { model.play(letter) } label: {
                 Image(systemName: "speaker.wave.2.fill")
-                    .font(.system(size: 26, weight: .bold))
+                    .font(.system(size: 26 * Theme.s, weight: .bold))
                     .foregroundColor(.white)
-                    .frame(width: 64, height: 64)
+                    .frame(width: 64 * Theme.s, height: 64 * Theme.s)
                     .background(Circle().fill(Theme.accent))
             }
             .accessibilityLabel("Listen")
@@ -89,11 +89,11 @@ struct PracticeView: View {
     private func iconButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 4) {
-                Image(systemName: symbol).font(.system(size: 22, weight: .bold))
-                Text(label).font(.system(size: 12, weight: .semibold, design: .rounded))
+                Image(systemName: symbol).font(.system(size: 22 * Theme.s, weight: .bold))
+                Text(label).font(.system(size: 12 * Theme.s, weight: .semibold, design: .rounded))
             }
             .foregroundColor(Theme.ink)
-            .frame(maxWidth: .infinity, minHeight: 64)
+            .frame(maxWidth: .infinity, minHeight: 64 * Theme.s)
             .background(RoundedRectangle(cornerRadius: 18).fill(Color.white))
         }
         .buttonStyle(.plain)

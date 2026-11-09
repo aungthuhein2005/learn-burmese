@@ -14,13 +14,18 @@ enum Theme {
         Color(hex: 0xF0E2FF), Color(hex: 0xFFDDE8), Color(hex: 0xDDF3F0),
     ]
 
-    static func title(_ size: CGFloat = 28) -> Font { .system(size: size, weight: .bold, design: .rounded) }
-    static func body(_ size: CGFloat = 18) -> Font { .system(size: size, weight: .semibold, design: .rounded) }
+    /// UI scale: 1 on iPhone, larger on iPad so screens aren't a small phone-sized column.
+    @MainActor static let s: CGFloat = UIDevice.current.userInterfaceIdiom == .pad ? 1.45 : 1
+    /// Width of the content column (640 pt on iPhone-sized layouts).
+    @MainActor static var maxWidth: CGFloat { 640 * s }
+
+    @MainActor static func title(_ size: CGFloat = 28) -> Font { .system(size: size * s, weight: .bold, design: .rounded) }
+    @MainActor static func body(_ size: CGFloat = 18) -> Font { .system(size: size * s, weight: .semibold, design: .rounded) }
 }
 
 extension View {
     /// Burmese marks above/below a letter extend past the line height; give them room.
-    func myanmarSpacing(_ amount: CGFloat = 4) -> some View { padding(.vertical, amount) }
+    @MainActor func myanmarSpacing(_ amount: CGFloat = 4) -> some View { padding(.vertical, amount * Theme.s) }
 }
 
 extension Color {
@@ -38,7 +43,7 @@ struct KidButtonStyle: ButtonStyle {
         configuration.label
             .font(Theme.body(20))
             .foregroundColor(.white)
-            .frame(maxWidth: .infinity, minHeight: 64)
+            .frame(maxWidth: .infinity, minHeight: 64 * Theme.s)
             .background(RoundedRectangle(cornerRadius: 22).fill(color))
             .shadow(color: color.opacity(0.35), radius: configuration.isPressed ? 2 : 6, y: configuration.isPressed ? 1 : 4)
             .scaleEffect(configuration.isPressed ? 0.96 : 1)
@@ -53,7 +58,7 @@ struct StarsRow: View {
         HStack(spacing: 2) {
             ForEach(0..<3, id: \.self) { i in
                 Image(systemName: i < count ? "star.fill" : "star")
-                    .font(.system(size: size))
+                    .font(.system(size: size * Theme.s))
                     .foregroundColor(i < count ? Theme.star : .gray.opacity(0.35))
             }
         }

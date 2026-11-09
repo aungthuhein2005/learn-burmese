@@ -116,7 +116,7 @@ struct HomeView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 640)
+            .frame(maxWidth: Theme.maxWidth)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background.ignoresSafeArea())
@@ -158,12 +158,12 @@ struct HomeTile: View {
     var body: some View {
         Button(action: action) {
             VStack(spacing: 10) {
-                Image(systemName: symbol).font(.system(size: 40, weight: .bold))
+                Image(systemName: symbol).font(.system(size: 40 * Theme.s, weight: .bold))
                 Text(title).font(Theme.title(22))
-                Text(subtitle).font(.system(size: 15, weight: .medium)).opacity(0.9).myanmarSpacing()
+                Text(subtitle).font(.system(size: 15 * Theme.s, weight: .medium)).opacity(0.9).myanmarSpacing()
             }
             .foregroundColor(.white)
-            .frame(maxWidth: .infinity, minHeight: 140)
+            .frame(maxWidth: .infinity, minHeight: 140 * Theme.s)
             .background(RoundedRectangle(cornerRadius: 28).fill(color))
             .shadow(color: color.opacity(0.35), radius: 8, y: 5)
         }
@@ -180,11 +180,11 @@ struct MascotBubble: View {
     var body: some View {
         HStack(alignment: .center, spacing: 12) {
             Text("🐘")
-                .font(.system(size: 54))
+                .font(.system(size: 54 * Theme.s))
                 .offset(y: bounce ? -4 : 2)
                 .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: bounce)
             VStack(alignment: .leading, spacing: 2) {
-                Text(message.my).font(.system(size: 17, weight: .bold)).foregroundColor(Theme.ink)
+                Text(message.my).font(.system(size: 17 * Theme.s, weight: .bold)).foregroundColor(Theme.ink)
                     .myanmarSpacing(2)
                 Text(message.en).font(Theme.body(14)).foregroundColor(.secondary)
             }

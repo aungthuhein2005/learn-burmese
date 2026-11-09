@@ -21,7 +21,7 @@ struct FindLetterView: View {
             if finished { summary } else { game }
         }
         .padding(20)
-        .frame(maxWidth: 640)
+        .frame(maxWidth: Theme.maxWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Find")
@@ -43,9 +43,9 @@ struct FindLetterView: View {
             Button { if let target { model.play(target) } } label: {
                 VStack(spacing: 8) {
                     Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 44, weight: .bold))
+                        .font(.system(size: 44 * Theme.s, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(width: 110, height: 110)
+                        .frame(width: 110 * Theme.s, height: 110 * Theme.s)
                         .background(Circle().fill(Theme.accent))
                         .shadow(color: Theme.accent.opacity(0.4), radius: 8, y: 4)
                     Text("Which letter is it?").font(Theme.title(22)).foregroundColor(Theme.ink)
@@ -77,9 +77,9 @@ struct FindLetterView: View {
         let fill: Color = solved && isTarget ? Theme.success : (isWrong ? Color.gray.opacity(0.25) : Color.white)
         return Button { pick(letter) } label: {
             Text(letter.char)
-                .font(.system(size: 64, weight: .semibold))
+                .font(.system(size: 64 * Theme.s, weight: .semibold))
                 .foregroundColor(solved && isTarget ? .white : (isWrong ? .gray : Theme.ink))
-                .frame(maxWidth: .infinity, minHeight: 120)
+                .frame(maxWidth: .infinity, minHeight: 120 * Theme.s)
                 .background(RoundedRectangle(cornerRadius: 24).fill(fill))
                 .shadow(color: .black.opacity(0.06), radius: 6, y: 3)
                 .scaleEffect(solved && isTarget ? 1.05 : 1)
@@ -92,10 +92,10 @@ struct FindLetterView: View {
     private var summary: some View {
         VStack(spacing: 20) {
             Spacer()
-            Text("🐘").font(.system(size: 90))
+            Text("🐘").font(.system(size: 90 * Theme.s))
             Text("\(score) / \(Self.rounds)").font(Theme.title(34)).foregroundColor(Theme.ink)
             Text(score >= 8 ? "သိပ်ကောင်းတယ်!" : "ကောင်းတယ်! ထပ်ကစားကြမယ်")
-                .font(.system(size: 22, weight: .bold)).foregroundColor(.secondary)
+                .font(.system(size: 22 * Theme.s, weight: .bold)).foregroundColor(.secondary)
                 .myanmarSpacing(6)
             Spacer()
             Button(action: start) { Label("Play again", systemImage: "arrow.counterclockwise") }

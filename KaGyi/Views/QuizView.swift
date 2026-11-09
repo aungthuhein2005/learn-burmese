@@ -26,7 +26,7 @@ struct QuizView: View {
             if finished { summary } else { question }
         }
         .padding(20)
-        .frame(maxWidth: 640)
+        .frame(maxWidth: Theme.maxWidth)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Quiz")
@@ -49,9 +49,9 @@ struct QuizView: View {
             HStack(spacing: 14) {
                 Button { model.play(letter) } label: {
                     Image(systemName: "speaker.wave.3.fill")
-                        .font(.system(size: 30, weight: .bold))
+                        .font(.system(size: 30 * Theme.s, weight: .bold))
                         .foregroundColor(.white)
-                        .frame(width: 76, height: 76)
+                        .frame(width: 76 * Theme.s, height: 76 * Theme.s)
                         .background(Circle().fill(Theme.accent))
                 }
                 .accessibilityLabel("Listen again")
@@ -67,7 +67,7 @@ struct QuizView: View {
                 if let s = lastStars {
                     VStack(spacing: 4) {
                         StarsRow(count: s, size: 30)
-                        Text(letter.char).font(.system(size: 40, weight: .bold)).foregroundColor(Theme.primary)
+                        Text(letter.char).font(.system(size: 40 * Theme.s, weight: .bold)).foregroundColor(Theme.primary)
                     }
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 18).fill(Color.white.opacity(0.95)))
@@ -97,10 +97,10 @@ struct QuizView: View {
     private var summary: some View {
         VStack(spacing: 20) {
             Spacer()
-            Image(systemName: "trophy.fill").font(.system(size: 90)).foregroundColor(Theme.star)
+            Image(systemName: "trophy.fill").font(.system(size: 90 * Theme.s)).foregroundColor(Theme.star)
             Text("\(earned) / \(questions.count * 3) stars").font(Theme.title(32)).foregroundColor(Theme.ink)
             Text(earned >= questions.count * 2 ? "သိပ်ကောင်းတယ်!" : "ကောင်းတယ်! ထပ်ကြိုးစားကြမယ်")
-                .font(.system(size: 22, weight: .bold)).foregroundColor(.secondary)
+                .font(.system(size: 22 * Theme.s, weight: .bold)).foregroundColor(.secondary)
                 .myanmarSpacing(6)
             Spacer()
             Button(action: restart) { Label("Play again", systemImage: "arrow.counterclockwise") }

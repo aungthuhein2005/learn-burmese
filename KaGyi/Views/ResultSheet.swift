@@ -26,13 +26,13 @@ struct ResultSheet: View {
                 HStack(spacing: 12) {
                     ForEach(0..<3, id: \.self) { i in
                         Image(systemName: i < result.stars ? "star.fill" : "star")
-                            .font(.system(size: 52, weight: .bold))
+                            .font(.system(size: 52 * Theme.s, weight: .bold))
                             .foregroundColor(i < result.stars ? Theme.star : .gray.opacity(0.3))
                             .scaleEffect(i < shown ? 1 : 0.3)
                             .opacity(i < result.stars ? (i < shown ? 1 : 0) : 1)
                     }
                 }
-                Text(message.my).font(.system(size: 24, weight: .bold)).foregroundColor(Theme.ink)
+                Text(message.my).font(.system(size: 24 * Theme.s, weight: .bold)).foregroundColor(Theme.ink)
                     .multilineTextAlignment(.center).myanmarSpacing(6)
                 Text(message.en).font(Theme.body(18)).foregroundColor(.secondary)
 

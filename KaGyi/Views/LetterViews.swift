@@ -17,13 +17,13 @@ struct LetterGridView: View {
                             ForEach(group.letters) { letter in
                                 Button { path.append(.practice(letter.index)) } label: {
                                     VStack(spacing: 2) {
-                                        Text(letter.char).font(.system(size: 34, weight: .semibold))
+                                        Text(letter.char).font(.system(size: 34 * Theme.s, weight: .semibold))
                                             .foregroundColor(Theme.ink)
-                                        Text(letter.roman).font(.system(size: 11, weight: .medium, design: .rounded))
+                                        Text(letter.roman).font(.system(size: 11 * Theme.s, weight: .medium, design: .rounded))
                                             .foregroundColor(.secondary)
                                         StarsRow(count: model.stars(for: letter), size: 9)
                                     }
-                                    .frame(maxWidth: .infinity, minHeight: 84)
+                                    .frame(maxWidth: .infinity, minHeight: 84 * Theme.s)
                                     .background(RoundedRectangle(cornerRadius: 16).fill(Theme.groupColors[g]))
                                 }
                                 .buttonStyle(.plain)
@@ -34,7 +34,7 @@ struct LetterGridView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 640)
+            .frame(maxWidth: Theme.maxWidth)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background.ignoresSafeArea())
@@ -60,7 +60,7 @@ struct LearnView: View {
                 ForEach(Alphabet.letters) { letter in
                     VStack(spacing: 12) {
                         Text(letter.char)
-                            .font(.system(size: 180, weight: .bold))
+                            .font(.system(size: 180 * Theme.s, weight: .bold))
                             .foregroundColor(Theme.ink)
                             .minimumScaleFactor(0.5)
                         Text(letter.roman).font(Theme.title(34)).foregroundColor(Theme.primary)
@@ -88,7 +88,7 @@ struct LearnView: View {
             }
         }
         .padding(20)
-        .frame(maxWidth: 640)
+        .frame(maxWidth: Theme.maxWidth)
         .frame(maxWidth: .infinity)
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Learn")
@@ -117,11 +117,11 @@ struct StarsView: View {
                         let stars = model.stars(for: letter)
                         Button { path.append(.practice(letter.index)) } label: {
                             VStack(spacing: 4) {
-                                Text(letter.char).font(.system(size: 30, weight: .semibold))
+                                Text(letter.char).font(.system(size: 30 * Theme.s, weight: .semibold))
                                     .foregroundColor(stars == 3 ? .white : Theme.ink)
                                 StarsRow(count: stars, size: 9)
                             }
-                            .frame(maxWidth: .infinity, minHeight: 76)
+                            .frame(maxWidth: .infinity, minHeight: 76 * Theme.s)
                             .background(RoundedRectangle(cornerRadius: 16)
                                 .fill(stars == 3 ? Theme.success : Color.white))
                         }
@@ -130,7 +130,7 @@ struct StarsView: View {
                 }
             }
             .padding(20)
-            .frame(maxWidth: 640)
+            .frame(maxWidth: Theme.maxWidth)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background.ignoresSafeArea())
@@ -139,11 +139,11 @@ struct StarsView: View {
 
     private func statCard(value: String, label: String, symbol: String, color: Color) -> some View {
         VStack(spacing: 6) {
-            Image(systemName: symbol).font(.system(size: 28)).foregroundColor(color)
+            Image(systemName: symbol).font(.system(size: 28 * Theme.s)).foregroundColor(color)
             Text(value).font(Theme.title(28)).foregroundColor(Theme.ink)
             Text(label).font(Theme.body(14)).foregroundColor(.secondary)
         }
-        .frame(maxWidth: .infinity, minHeight: 120)
+        .frame(maxWidth: .infinity, minHeight: 120 * Theme.s)
         .background(RoundedRectangle(cornerRadius: 22).fill(Color.white))
     }
 }
