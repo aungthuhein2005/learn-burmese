@@ -26,7 +26,7 @@ struct LoadingView: View {
 }
 
 enum Route: Hashable {
-    case grid, learn(Int), practice(Int), quiz, stars, parents
+    case grid, learn(Int), practice(Int), quiz, find, stars, stickers, parents
 }
 
 struct HomeView: View {
@@ -36,6 +36,15 @@ struct HomeView: View {
 
     var body: some View {
         NavigationStack(path: $path) { content }
+            .overlay {
+                if let sticker = model.newSticker {
+                    StickerCelebration(sticker: sticker) {
+                        withAnimation { model.newSticker = nil }
+                    }
+                    .transition(.opacity)
+                }
+            }
+            .animation(.easeInOut, value: model.newSticker)
     }
 
     private var content: some View {
@@ -43,13 +52,22 @@ struct HomeView: View {
             VStack(spacing: 20) {
                 VStack(spacing: 4) {
                     Text("Akkhara").font(Theme.title(44)).foregroundColor(Theme.primary)
-                    HStack(spacing: 6) {
-                        Image(systemName: "star.fill").foregroundColor(Theme.star)
-                        Text("\(model.totalStars) stars").font(Theme.body(18)).foregroundColor(Theme.ink)
+                    HStack(spacing: 16) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "star.fill").foregroundColor(Theme.star)
+                            Text("\(model.lifetimeStars)").font(Theme.body(18)).foregroundColor(Theme.ink)
+                        }
+                        HStack(spacing: 6) {
+                            Image(systemName: "flame.fill").foregroundColor(model.streak > 0 ? Theme.primary : .gray)
+                            Text(model.streak == 1 ? "1 day" : "\(model.streak) days").font(Theme.body(18)).foregroundColor(Theme.ink)
+                        }
                     }
                     .padding(.top, 4)
+                    .accessibilityElement(children: .combine)
                 }
                 .padding(.top, 8)
+
+                MascotBubble(message: Rewards.mascotMessage(streak: model.streak, lifetimeStars: model.lifetimeStars))
 
                 LazyVGrid(columns: [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)], spacing: 16) {
                     HomeTile(symbol: "book.fill", title: "Learn", subtitle: "လေ့လာမယ်", color: Theme.accent) {
@@ -58,11 +76,19 @@ struct HomeView: View {
                     HomeTile(symbol: "pencil.tip", title: "Practice", subtitle: "ရေးကြည့်မယ်", color: Theme.primary) {
                         path.append(.grid)
                     }
+                    HomeTile(symbol: "hand.tap.fill", title: "Find", subtitle: "ရှာကြည့်မယ်", color: Color(hex: 0xFF5C8A)) {
+                        path.append(.find)
+                    }
                     HomeTile(symbol: "target", title: "Quiz", subtitle: "စစ်ကြည့်မယ်", color: Color(hex: 0xA77BFF)) {
                         path.append(.quiz)
                     }
                     HomeTile(symbol: "star.fill", title: "My Stars", subtitle: "ကြယ်တွေ", color: Theme.success) {
                         path.append(.stars)
+                    }
+                    HomeTile(symbol: "face.smiling.inverse", title: "Stickers",
+                             subtitle: "\(model.unlockedStickers.count) / \(Rewards.stickers.count)",
+                             color: Color(hex: 0x2BB5C4)) {
+                        path.append(.stickers)
                     }
                 }
             }
@@ -89,7 +115,9 @@ struct HomeView: View {
             case .learn(let i): LearnView(startIndex: i, path: $path)
             case .practice(let i): PracticeView(startIndex: i)
             case .quiz: QuizView()
+            case .find: FindLetterView()
             case .stars: StarsView(path: $path)
+            case .stickers: StickersView()
             case .parents: ParentsView()
             }
         }
@@ -112,11 +140,37 @@ struct HomeTile: View {
                 Text(subtitle).font(.system(size: 15, weight: .medium)).opacity(0.9).myanmarSpacing()
             }
             .foregroundColor(.white)
-            .frame(maxWidth: .infinity, minHeight: 160)
+            .frame(maxWidth: .infinity, minHeight: 140)
             .background(RoundedRectangle(cornerRadius: 28).fill(color))
             .shadow(color: color.opacity(0.35), radius: 8, y: 5)
         }
         .buttonStyle(.plain)
         .accessibilityLabel(title)
+    }
+}
+
+/// The elephant mascot with a speech bubble on the home screen.
+struct MascotBubble: View {
+    let message: (my: String, en: String)
+    @State private var bounce = false
+
+    var body: some View {
+        HStack(alignment: .center, spacing: 12) {
+            Text("🐘")
+                .font(.system(size: 54))
+                .offset(y: bounce ? -4 : 2)
+                .animation(.easeInOut(duration: 1.2).repeatForever(autoreverses: true), value: bounce)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(message.my).font(.system(size: 17, weight: .bold)).foregroundColor(Theme.ink)
+                    .myanmarSpacing(2)
+                Text(message.en).font(Theme.body(14)).foregroundColor(.secondary)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 22).fill(Color.white))
+        .shadow(color: .black.opacity(0.05), radius: 6, y: 3)
+        .onAppear { bounce = true }
+        .accessibilityElement(children: .combine)
     }
 }

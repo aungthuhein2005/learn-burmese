@@ -1,6 +1,8 @@
 import SwiftUI
 
 /// 10 rounds: hear a letter, write it from memory (no guide).
+/// Adaptive: letters the child got wrong recently come up more often, and a letter
+/// missed in this quiz (under 2 stars) comes back once, a few questions later.
 struct QuizView: View {
     @EnvironmentObject var model: AppModel
     @Environment(\.dismiss) private var dismiss
@@ -13,6 +15,9 @@ struct QuizView: View {
     @State private var lastStars: Int?
     @State private var earned = 0
     @State private var finished = false
+    @State private var started = false
+    @State private var retried: Set<Int> = []
+    static let maxExtra = 3
 
     private var letter: Letter { questions[round] }
 
@@ -26,13 +31,15 @@ struct QuizView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Quiz")
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { model.play(letter) }
+        .onAppear {
+            if !started { started = true; restart() } else { model.play(letter) }
+        }
     }
 
     private var question: some View {
         VStack(spacing: 16) {
             HStack {
-                Text("\(round + 1) / \(Self.rounds)").font(Theme.body(18)).foregroundColor(.secondary)
+                Text("\(round + 1) / \(questions.count)").font(Theme.body(18)).foregroundColor(.secondary)
                 Spacer()
                 HStack(spacing: 4) {
                     Image(systemName: "star.fill").foregroundColor(Theme.star)
@@ -91,16 +98,12 @@ struct QuizView: View {
         VStack(spacing: 20) {
             Spacer()
             Image(systemName: "trophy.fill").font(.system(size: 90)).foregroundColor(Theme.star)
-            Text("\(earned) / \(Self.rounds * 3) stars").font(Theme.title(32)).foregroundColor(Theme.ink)
-            Text(earned >= Self.rounds * 2 ? "သိပ်ကောင်းတယ်!" : "ကောင်းတယ်! ထပ်ကြိုးစားကြမယ်")
+            Text("\(earned) / \(questions.count * 3) stars").font(Theme.title(32)).foregroundColor(Theme.ink)
+            Text(earned >= questions.count * 2 ? "သိပ်ကောင်းတယ်!" : "ကောင်းတယ်! ထပ်ကြိုးစားကြမယ်")
                 .font(.system(size: 22, weight: .bold)).foregroundColor(.secondary)
                 .myanmarSpacing(6)
             Spacer()
-            Button {
-                questions = Array(Alphabet.letters.shuffled().prefix(Self.rounds))
-                round = 0; earned = 0; finished = false; strokes = []; lastStars = nil
-                model.play(letter)
-            } label: { Label("Play again", systemImage: "arrow.counterclockwise") }
+            Button(action: restart) { Label("Play again", systemImage: "arrow.counterclockwise") }
                 .buttonStyle(KidButtonStyle(color: Theme.primary))
             Button { dismiss() } label: { Label("Home", systemImage: "house.fill") }
                 .buttonStyle(KidButtonStyle(color: Theme.accent))
@@ -116,14 +119,26 @@ struct QuizView: View {
         model.record(r)
         model.playPraise(stars: r.stars)
         earned += r.stars
+        // Missed it? Bring this letter back once, three questions later.
+        if r.stars < 2, !retried.contains(letter.index), questions.count < Self.rounds + Self.maxExtra {
+            retried.insert(letter.index)
+            questions.insert(letter, at: min(round + 4, questions.count))
+        }
         withAnimation(.spring()) { lastStars = r.stars }
         if r.stars == 3 { UINotificationFeedbackGenerator().notificationOccurred(.success) }
+    }
+
+    private func restart() {
+        questions = model.pickLetters(count: Self.rounds)
+        round = 0; earned = 0; finished = false; strokes = []; lastStars = nil
+        retried = []
+        model.play(letter)
     }
 
     private func next() {
         lastStars = nil
         strokes = []
-        if round + 1 >= Self.rounds {
+        if round + 1 >= questions.count {
             finished = true
         } else {
             round += 1

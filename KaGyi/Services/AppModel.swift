@@ -29,9 +29,7 @@ final class AppModel: ObservableObject {
     private let starsKey = "bestStars"
 
     init() {
-        if let saved = UserDefaults.standard.dictionary(forKey: starsKey) as? [String: Int] {
-            bestStars = Dictionary(uniqueKeysWithValues: saved.compactMap { k, v in Int(k).map { ($0, v) } })
-        }
+        loadProgress()
         // .playback so letter sounds play even when the Ring/Silent switch is on silent
         // (.ambient is muted by it). mixWithOthers keeps any music the child is playing.
         let session = AVAudioSession.sharedInstance()
@@ -59,25 +57,78 @@ final class AppModel: ObservableObject {
 
     // MARK: Progress
 
+    @Published private(set) var lastStars: [Int: Int] = [:]   // letter index → most recent stars
+    @Published private(set) var lifetimeStars = 0              // every star ever earned
+    @Published private(set) var practiceDays: Set<String> = []
+    /// Set when a sticker unlocks; the home screen shows a celebration and clears it.
+    @Published var newSticker: Sticker?
+
     var totalStars: Int { bestStars.values.reduce(0, +) }
+    var streak: Int { Rewards.streak(practiceDays: practiceDays) }
+    var unlockedStickers: [Sticker] { Rewards.unlocked(lifetimeStars: lifetimeStars) }
 
     func stars(for letter: Letter) -> Int { bestStars[letter.index] ?? 0 }
 
+    /// Records a writing result (Practice or Quiz).
     func record(_ result: ScoreResult) {
         let i = result.target.index
-        guard result.stars > (bestStars[i] ?? 0) else { return }
-        bestStars[i] = result.stars
+        lastStars[i] = result.stars
+        if result.stars > (bestStars[i] ?? 0) { bestStars[i] = result.stars }
+        earn(result.stars)
+    }
+
+    /// Records a Find-the-Letter answer: a correct tap earns one star.
+    func recordFind(_ letter: Letter, correct: Bool) {
+        earn(correct ? 1 : 0)
+    }
+
+    private func earn(_ stars: Int) {
+        let before = Rewards.unlocked(lifetimeStars: lifetimeStars).count
+        lifetimeStars += stars
+        practiceDays.insert(Rewards.dayKey())
+        let unlocked = Rewards.unlocked(lifetimeStars: lifetimeStars)
+        if unlocked.count > before { newSticker = unlocked.last }
         save()
+    }
+
+    /// Letters for a quiz or game, favouring ones the child got wrong recently.
+    func pickLetters(count: Int) -> [Letter] {
+        Rewards.pickLetters(count: count, lastStars: lastStars)
     }
 
     func resetProgress() {
         bestStars = [:]
+        lastStars = [:]
+        lifetimeStars = 0
+        practiceDays = []
         save()
     }
 
+    private static func encode(_ d: [Int: Int]) -> [String: Int] {
+        Dictionary(uniqueKeysWithValues: d.map { (String($0.key), $0.value) })
+    }
+
+    private static func decode(_ any: Any?) -> [Int: Int] {
+        guard let d = any as? [String: Int] else { return [:] }
+        return Dictionary(uniqueKeysWithValues: d.compactMap { k, v in Int(k).map { ($0, v) } })
+    }
+
+    private func loadProgress() {
+        let ud = UserDefaults.standard
+        bestStars = Self.decode(ud.dictionary(forKey: starsKey))
+        lastStars = Self.decode(ud.dictionary(forKey: "lastStars"))
+        lifetimeStars = ud.integer(forKey: "lifetimeStars")
+        practiceDays = Set(ud.stringArray(forKey: "practiceDays") ?? [])
+        // Existing players keep credit for the stars they already earned.
+        if lifetimeStars < totalStars { lifetimeStars = totalStars }
+    }
+
     private func save() {
-        let dict = Dictionary(uniqueKeysWithValues: bestStars.map { (String($0.key), $0.value) })
-        UserDefaults.standard.set(dict, forKey: starsKey)
+        let ud = UserDefaults.standard
+        ud.set(Self.encode(bestStars), forKey: starsKey)
+        ud.set(Self.encode(lastStars), forKey: "lastStars")
+        ud.set(lifetimeStars, forKey: "lifetimeStars")
+        ud.set(Array(practiceDays.sorted().suffix(400)), forKey: "practiceDays")
     }
 
     // MARK: Audio
