@@ -1,0 +1,151 @@
+# Akkhara — App Store listing
+
+Copy each field into App Store Connect → Akkhara → (iOS App 1.0) and → App Information.
+Character limits are Apple's; every field below fits.
+
+## App Information
+
+| Field | Value |
+|---|---|
+| Name (30) | `Akkhara` |
+| Subtitle (30) | `Learn to write Myanmar letters` |
+| Primary category | Education |
+| Secondary category (optional) | leave empty |
+| Made for Kids | Age Rating › **Made for Kids: Ages 6–8** (optional, see "Kids Category" below) |
+| Content rights | "No, it does not contain, show, or access third-party content". Letter recordings are our own; the handwriting model is our own (aungthuhein-dev/myanmar-handwriting); ONNX Runtime is MIT-licensed. |
+| Age rating | Answer **None / No** to every question → **4+** |
+| Bundle ID | `com.aungthuhein.kagyi` (internal only, never shown to users) |
+
+## URLs
+
+Hosted from the `website/` folder (Vercel, like Palm Note).
+
+| Field | Value |
+|---|---|
+| Privacy Policy URL | `https://<your-vercel-domain>/privacy` |
+| Support URL | `https://<your-vercel-domain>/support` |
+| Marketing URL (optional) | `https://<your-vercel-domain>` |
+
+## App Privacy
+
+Data collection → **"No, we do not collect data from this app"**. Result: *Data Not Collected*.
+
+The app also ships `PrivacyInfo.xcprivacy` (no tracking, no collected data; UserDefaults reason CA92.1, file timestamp reason C617.1).
+
+## Version 1.0
+
+**Promotional text (170)**
+
+```
+Kids learn to write all 33 Myanmar letters by drawing them. Hear each letter, get stars and stickers. Works offline, no ads, no accounts.
+```
+
+**Description (4000)**
+
+```
+Akkhara (အက္ခရာ, "alphabet") helps children and beginners learn to write the 33 Myanmar consonants, က to အ, by drawing them with a finger or Apple Pencil.
+
+Hear a letter, write it, and get up to three stars with friendly spoken encouragement in Burmese. Handwriting is checked right on the device, so it works offline and drawings never leave the phone.
+
+LEARN
+• Swipe through all 33 letters and hear each one, recorded by a native speaker
+• Letters grouped in their traditional rows (က, စ, ဋ, တ, ပ, ယ, အ)
+
+PRACTISE
+• Write over a faint guide letter, then try without it
+• Instant 0–3 star score for every letter
+• "That looks like ဂ!" hints when a letter is mixed up
+
+PLAY
+• Find the Letter: hear a letter and tap it among four, perfect for younger children who can't write yet
+• Quiz: hear a letter and write it from memory
+• Smart practice: letters your child finds hard come back more often
+
+STAY MOTIVATED
+• Collect 12 stickers as stars add up
+• Daily practice streak
+• A cheerful elephant friend on the home screen
+
+FOR PARENTS
+• Parents' Corner behind a simple adult gate: difficulty, sounds, tracing guide, reset progress
+• No ads, no in-app purchases, no accounts, no tracking
+• Works fully offline
+
+Made in Myanmar for Myanmar children everywhere.
+```
+
+**Keywords (100)** — comma-separated, no spaces after commas
+
+```
+myanmar,burmese,alphabet,handwriting,kids,write,letters,tracing,consonant,abc,school,learn,preschool
+```
+
+**What's New (first release)**
+
+```
+First release of Akkhara.
+```
+
+**Copyright**
+
+```
+2026 Aung Thu Hein
+```
+
+## App Review Information
+
+| Field | Value |
+|---|---|
+| Sign-in required | **No** |
+| Contact | Aung Thu Hein · your email · your phone number |
+
+**Notes for the reviewer**
+
+```
+Akkhara teaches children to write the 33 Myanmar (Burmese) consonants. No account or sign-in is needed, and the app makes no network requests.
+
+FIRST LAUNCH: the app prepares its letter references on the device (a progress bar, usually a few seconds). After that it opens instantly.
+
+TO TEST:
+1. Practice › tap any letter › draw it over the faint guide › Check. You get 0–3 stars.
+2. Find › listen and tap the matching letter.
+3. Quiz › listen and write the letter from memory.
+4. Parents' Corner (lock icon, top right) is behind an adult gate: answer the multiplication question shown.
+
+Handwriting is scored entirely on the device by a small neural network (ONNX Runtime). Drawings, progress and settings stay on the device. There are no ads, analytics, third-party SDKs that collect data, in-app purchases or external links.
+```
+
+## Kids Category (optional)
+
+Choosing a Kids age band puts the app in the App Store Kids section. Apple then requires
+(Guideline 1.3 and 5.1.4), and Akkhara already meets:
+
+- No third-party advertising or analytics
+- No data collection, and a privacy policy
+- Links out of the app, purchases or other "grown-up" actions only behind a parental gate.
+  Akkhara has no links or purchases; Parents' Corner is already gated.
+
+Once chosen, the Kids Category can't easily be removed later. If unsure, publish under
+Education only first.
+
+## Pricing and Availability
+
+- Price: **Free**
+- Availability: all countries. If the EU trader-status (Digital Services Act) question in
+  App Store Connect → Business isn't answered yet, exclude the European Union until it is.
+
+## Screenshots
+
+Upload in this order. Generated by **Actions › App Store screenshots** (captioned with
+`scripts/make_screenshots.py`), saved in `docs/screenshots/`.
+
+| # | Screen | Caption |
+|---|---|---|
+| 1 | Home | Learn to write Myanmar letters |
+| 2 | Practice with a 3-star result | Write it. Get stars! |
+| 3 | Learn card | Hear every letter |
+| 4 | Find the Letter | Find the letter you hear |
+| 5 | Stickers | Collect stickers every day |
+
+Sizes: iPhone 6.9" 1320 × 2868 and iPad 13" 2064 × 2752 (the app supports iPad, so iPad
+screenshots are required).

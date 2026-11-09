@@ -48,7 +48,15 @@ struct PracticeView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .background(Theme.background.ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
-        .onAppear { model.play(letter) }
+        .onAppear {
+            model.play(letter)
+            // Screenshot automation: `-demoDraw YES` writes the letter and checks it.
+            if AppModel.isDemo, UserDefaults.standard.bool(forKey: "demoDraw"), strokes.isEmpty {
+                let side = min(UIScreen.main.bounds.width, 640) - 48
+                strokes = ImageNormalizer.demoStrokes(for: letter.char, canvasSide: side)
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { Task { await check() } }
+            }
+        }
         .sheet(item: $result) { r in
             ResultSheet(result: r.result,
                         onAgain: { result = nil; strokes = [] },

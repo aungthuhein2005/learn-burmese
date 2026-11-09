@@ -117,6 +117,23 @@ enum ImageNormalizer {
         }
     }
 
+    /// Screenshot automation: the glyph's centre line as dot strokes in canvas coordinates.
+    static func demoStrokes(for text: String, canvasSide: CGFloat) -> [[CGPoint]] {
+        let font = UIFont(name: "MyanmarSangamMN", size: 300) ?? UIFont.systemFont(ofSize: 300)
+        guard let alpha = Self.alpha(fromGlyph: text, font: font) else { return [] }
+        let n = side
+        var img = alpha.map { $0 > 127 }
+        thin(&img, size: n)
+        let scale = canvasSide / CGFloat(n)
+        var strokes: [[CGPoint]] = []
+        for y in 0..<n {
+            for x in 0..<n where img[y * n + x] {
+                strokes.append([CGPoint(x: (CGFloat(x) + 0.5) * scale, y: (CGFloat(y) + 0.5) * scale)])
+            }
+        }
+        return strokes
+    }
+
     /// Zhang–Suen thinning on a binary image (true = ink), in place.
     private static func thin(_ img: inout [Bool], size n: Int) {
         func at(_ x: Int, _ y: Int) -> Bool {

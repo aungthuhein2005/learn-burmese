@@ -113,8 +113,23 @@ final class AppModel: ObservableObject {
         return Dictionary(uniqueKeysWithValues: d.compactMap { k, v in Int(k).map { ($0, v) } })
     }
 
+    /// Demo mode for App Store screenshots, only via launch argument `-demo YES`.
+    /// Shows sample progress and never saves.
+    static let isDemo = UserDefaults.standard.bool(forKey: "demo")
+
     private func loadProgress() {
         let ud = UserDefaults.standard
+        if Self.isDemo {
+            for (n, l) in Alphabet.letters.prefix(22).enumerated() {
+                bestStars[l.index] = n % 4 == 3 ? 2 : 3
+            }
+            lastStars = bestStars
+            lifetimeStars = 64
+            practiceDays = Set((0..<5).compactMap {
+                Calendar.current.date(byAdding: .day, value: -$0, to: Date()).map { Rewards.dayKey($0) }
+            })
+            return
+        }
         bestStars = Self.decode(ud.dictionary(forKey: starsKey))
         lastStars = Self.decode(ud.dictionary(forKey: "lastStars"))
         lifetimeStars = ud.integer(forKey: "lifetimeStars")
@@ -124,6 +139,7 @@ final class AppModel: ObservableObject {
     }
 
     private func save() {
+        guard !Self.isDemo else { return }
         let ud = UserDefaults.standard
         ud.set(Self.encode(bestStars), forKey: starsKey)
         ud.set(Self.encode(lastStars), forKey: "lastStars")

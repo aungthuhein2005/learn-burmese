@@ -1,0 +1,98 @@
+# Captures App Store screenshots on iPhone 6.9" and iPad 13" simulators using the app's
+# demo mode (launch arguments only), then adds captions with scripts/make_screenshots.py.
+# Run by hand: Actions > App Store screenshots. Download the "app-store-screenshots" artifact.
+name: App Store screenshots
+
+on:
+  workflow_dispatch:
+
+jobs:
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 60
+    env:
+      BUNDLE_ID: com.aungthuhein.kagyi
+      APPLE_TEAM_ID: ""
+    steps:
+      - uses: actions/checkout@v4
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Cache converted model
+        id: model-cache
+        uses: actions/cache@v4
+        with:
+          path: KaGyi/Resources/model.onnx
+          key: model-fp32-${{ hashFiles('scripts/prepare_model.py') }}
+      - name: Download & prepare model (fp32)
+        if: steps.model-cache.outputs.cache-hit != 'true'
+        run: |
+          pip install onnx onnxruntime numpy
+          python scripts/prepare_model.py KaGyi/Resources/model.onnx
+
+      - name: Build for simulator
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          set -o pipefail
+          xcodebuild -project KaGyi.xcodeproj -scheme KaGyi -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath build CODE_SIGNING_ALLOWED=NO build | tail -n 20
+
+      - name: Capture screenshots
+        run: |
+          APP=$(find build/Build/Products -name KaGyi.app -maxdepth 3 | head -1)
+          pick() {  # newest available simulator whose name matches $1
+            xcrun simctl list devices available -j | python3 -c "
+          import json, re, sys
+          pat = re.compile(sys.argv[1])
+          devs = [(k, d) for k, v in json.load(sys.stdin)['devices'].items() if 'iOS' in k for d in v if pat.search(d['name'])]
+          devs.sort(key=lambda kd: [int(x) for x in re.findall(r'\d+', kd[0])])
+          print(devs[-1][1]['udid'] if devs else '')" "$1"
+          }
+          shoot() {  # $1 udid, $2 folder, $3 file, $4 seconds, rest: launch args
+            local dev=$1 dir=$2 name=$3 wait=$4; shift 4
+            xcrun simctl terminate "$dev" "$BUNDLE_ID" 2>/dev/null || true
+            xcrun simctl launch "$dev" "$BUNDLE_ID" -demo YES "$@"
+            sleep "$wait"
+            xcrun simctl io "$dev" screenshot "$dir/$name.png"
+          }
+          for kind in iphone ipad; do
+            if [ "$kind" = iphone ]; then DEV=$(pick 'iPhone.*Pro Max'); else DEV=$(pick 'iPad Pro.*13'); fi
+            [ -n "$DEV" ] || { echo "::error::No simulator found for $kind"; xcrun simctl list devices available; exit 1; }
+            echo "$kind: $DEV"
+            xcrun simctl boot "$DEV"; xcrun simctl bootstatus "$DEV" -b
+            xcrun simctl ui "$DEV" appearance light
+            xcrun simctl status_bar "$DEV" override --time "9:41" --dataNetwork wifi --wifiMode active \
+              --wifiBars 3 --cellularMode active --cellularBars 4 --batteryState charged --batteryLevel 100
+            xcrun simctl install "$DEV" "$APP"
+            mkdir -p "raw/$kind"
+            # First launch builds the letter cache (slow on CI); later launches are instant.
+            xcrun simctl launch "$DEV" "$BUNDLE_ID" -demo YES; sleep 60
+            shoot "$DEV" "raw/$kind" 1 6
+            shoot "$DEV" "raw/$kind" 2 9 -route practice:0 -demoDraw YES
+            shoot "$DEV" "raw/$kind" 3 6 -route learn:2
+            shoot "$DEV" "raw/$kind" 4 6 -route find
+            shoot "$DEV" "raw/$kind" 5 6 -route stickers
+            xcrun simctl shutdown "$DEV"
+          done
+          ls -la raw/*
+
+      - name: Add captions
+        run: |
+          pip install pillow
+          python scripts/make_screenshots.py raw/iphone out/iphone
+          python scripts/make_screenshots.py raw/ipad out/ipad --ipad
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-store-screenshots
+          path: |
+            raw
+            out

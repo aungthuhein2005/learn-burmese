@@ -33,9 +33,11 @@ struct HomeView: View {
     @EnvironmentObject var model: AppModel
     @State private var path: [Route] = []
     @State private var showGate = false
+    @State private var didOpenLaunchRoute = false
 
     var body: some View {
         NavigationStack(path: $path) { content }
+            .onAppear(perform: openLaunchRoute)
             .overlay {
                 if let sticker = model.newSticker {
                     StickerCelebration(sticker: sticker) {
@@ -45,6 +47,27 @@ struct HomeView: View {
                 }
             }
             .animation(.easeInOut, value: model.newSticker)
+    }
+
+    /// Screenshot automation: `-route find|quiz|stickers|stars|grid|learn:N|practice:N`.
+    private func openLaunchRoute() {
+        guard !didOpenLaunchRoute, AppModel.isDemo,
+              let arg = UserDefaults.standard.string(forKey: "route") else { return }
+        didOpenLaunchRoute = true
+        let parts = arg.split(separator: ":")
+        let n = parts.count > 1 ? Int(parts[1]) ?? 0 : 0
+        let route: Route?
+        switch parts.first {
+        case "find": route = .find
+        case "quiz": route = .quiz
+        case "stickers": route = .stickers
+        case "stars": route = .stars
+        case "grid": route = .grid
+        case "learn": route = .learn(n)
+        case "practice": route = .practice(n)
+        default: route = nil
+        }
+        if let route { path = [route] }
     }
 
     private var content: some View {
